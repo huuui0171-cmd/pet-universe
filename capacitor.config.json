@@ -1,0 +1,9 @@
+{
+  "appId": "com.huiui.petuniverse",
+  "appName": "우리 애 우주",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#F2F2F7"
+  }
+}

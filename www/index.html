@@ -1,0 +1,1218 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#F2F2F7">
+<title>우리 애 우주</title>
+<style>html,body{margin:0} :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)} [hidden]{display:none!important} img{max-width:100%} body{overscroll-behavior:none;-webkit-user-select:none;user-select:none} input,textarea{-webkit-user-select:text;user-select:text}</style>
+</head>
+<body>
+<style>
+/* Layout: iOS-style app shell — plain grouped surfaces for content, glass reserved for controls that float over the universe (tab bar, canvas buttons, sheets). Follows system light/dark. */
+:root{
+  --bg:#F2F2F7; --surface:#FFFFFF; --surface-2:#F7F7FA; --fill:rgba(118,118,128,.12); --fill-2:rgba(118,118,128,.20);
+  --ink:#0E0E10; --muted:rgba(60,60,67,.60); --line:rgba(60,60,67,.13);
+  --accent:#0E0E10; --accent-ink:#FFFFFF; --on:#34C759; --danger:#FF3B30; --sel:#0E0E10; --sel-ink:#FFFFFF;
+  --g:rgba(255,255,255,.62); --g-edge:rgba(255,255,255,.85); --g-ink:#0E0E10; --g-ink2:rgba(60,60,67,.65); --g-shadow:0 6px 20px rgba(0,0,0,.10),0 1px 3px rgba(0,0,0,.06);
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Text','Apple SD Gothic Neo','IBM Plex Sans KR',system-ui,sans-serif;
+  --mono:ui-monospace,'SF Mono','IBM Plex Mono',Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#000000; --surface:#1C1C1E; --surface-2:#2C2C2E; --fill:rgba(118,118,128,.24); --fill-2:rgba(118,118,128,.36);
+  --ink:#F5F5F7; --muted:rgba(235,235,245,.60); --line:rgba(84,84,88,.55);
+  --accent:#F5F5F7; --accent-ink:#0E0E10; --on:#30D158; --danger:#FF453A; --sel:#F5F5F7; --sel-ink:#0E0E10;
+  --g:rgba(44,44,50,.55); --g-edge:rgba(255,255,255,.20); --g-ink:#F5F5F7; --g-ink2:rgba(235,235,245,.65); --g-shadow:0 8px 24px rgba(0,0,0,.4);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#000000; --surface:#1C1C1E; --surface-2:#2C2C2E; --fill:rgba(118,118,128,.24); --fill-2:rgba(118,118,128,.36);
+  --ink:#F5F5F7; --muted:rgba(235,235,245,.60); --line:rgba(84,84,88,.55);
+  --accent:#F5F5F7; --accent-ink:#0E0E10; --on:#30D158; --danger:#FF453A; --sel:#F5F5F7; --sel-ink:#0E0E10;
+  --g:rgba(44,44,50,.55); --g-edge:rgba(255,255,255,.20); --g-ink:#F5F5F7; --g-ink2:rgba(235,235,245,.65); --g-shadow:0 8px 24px rgba(0,0,0,.4);
+  color-scheme:dark}
+/* glass tint follows what is behind it: the scene, not the app theme */
+.space[data-scene="space"]{--g:rgba(36,38,52,.45); --g-edge:rgba(255,255,255,.22); --g-ink:#F5F5F7; --g-ink2:rgba(235,235,245,.68); --g-shadow:0 8px 24px rgba(0,0,0,.35)}
+.space[data-scene="sky"],.space[data-scene="white"]{--g:rgba(255,255,255,.58); --g-edge:rgba(255,255,255,.9); --g-ink:#0E0E10; --g-ink2:rgba(60,60,67,.65); --g-shadow:0 6px 20px rgba(0,0,0,.10),0 1px 3px rgba(0,0,0,.06)}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased;letter-spacing:-.01em}
+*{box-sizing:border-box}
+button,input{font:inherit;color:inherit;letter-spacing:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid #0A84FF;outline-offset:2px}
+.glass,.tabs,.fab,.caption,.editbar,.edit-tip,.sheet,.toast,.scene-btn,.scene-menu{
+  background:var(--g);color:var(--g-ink);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);backdrop-filter:blur(24px) saturate(180%);
+  border:.5px solid var(--g-edge);
+  box-shadow:inset 0 .5px 0 rgba(255,255,255,.55),var(--g-shadow);
+}
+.app{height:100%;max-width:480px;margin:0 auto;display:flex;flex-direction:column;position:relative;
+  padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-block:10px 6px;min-height:52px}
+.brand{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:600}
+.brand-mark{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#C9CCD6 40%,#7C8194);box-shadow:0 0 0 1px var(--line)}
+.top-r{display:flex;align-items:center;gap:8px}
+.pill{font-size:11px;font-weight:600;color:var(--muted);background:var(--fill);border-radius:999px;padding:3px 9px}
+.ibtn{width:36px;height:36px;border-radius:50%;border:0;background:var(--fill);display:grid;place-items:center}
+.ibtn svg{width:19px;height:19px}
+.back{display:flex;align-items:center;gap:2px;background:none;border:0;font-size:17px;font-weight:600;padding:0;margin-left:-4px}
+.back svg{width:24px;height:24px}
+main{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;padding-bottom:96px}
+.view{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px;padding-block:2px 12px}
+#view-sky{margin-bottom:-82px;padding-bottom:0}
+
+/* chips */
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;flex:none}
+.chip{flex:none;border:0;background:var(--fill);border-radius:999px;padding:4px 13px 4px 4px;display:inline-flex;align-items:center;gap:7px;font-size:14px;font-weight:500;white-space:nowrap;min-height:32px}
+.chip canvas,.chip i{width:24px;height:24px;border-radius:50%;flex:none;display:block}
+.chip[aria-pressed="true"]{background:var(--sel);color:var(--sel-ink)}
+.chip small{opacity:.6;font-family:var(--mono);font-size:11px}
+
+/* universe */
+.space{flex:1;min-height:340px;position:relative;border-radius:30px;overflow:hidden;background:#05071A}
+#sky{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+.caption{position:absolute;left:18px;top:18px;pointer-events:none;display:grid;gap:0;padding:8px 14px;border-radius:18px;max-width:calc(100% - 92px)}
+.caption strong{font-size:16px;font-weight:600}
+.caption span{font-size:12px;color:var(--g-ink2);font-variant-numeric:tabular-nums}
+.scene-btn{position:absolute;right:18px;top:18px;height:44px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;padding:0 14px 0 12px;font-size:13px;font-weight:600}
+.scene-btn svg{width:18px;height:18px}
+.fabs{position:absolute;right:18px;bottom:88px;display:flex;gap:10px}
+.fab{height:46px;border-radius:999px;display:inline-flex;align-items:center;gap:6px;padding:0 18px;font-size:14px;font-weight:600}
+.fab.icon{width:46px;padding:0;justify-content:center}
+.fab svg{width:18px;height:18px}
+.fab.primary{background:var(--g-ink);color:var(--g);-webkit-backdrop-filter:none;backdrop-filter:none;border-color:transparent}
+.space[data-scene="space"] .fab.primary{background:#F5F5F7;color:#0E0E10}
+.space[data-scene="sky"] .fab.primary,.space[data-scene="white"] .fab.primary{background:#0E0E10;color:#fff}
+.hint{display:none}
+.empty-space{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:12px;text-align:center;color:var(--g-ink2);font-size:14px;padding:24px;pointer-events:none}
+.empty-space .btn{pointer-events:auto}
+.toast{position:absolute;left:50%;top:84px;transform:translateX(-50%);font-size:14px;font-weight:600;padding:9px 16px;border-radius:999px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .25s, transform .35s;z-index:6}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(4px)}
+.sheet-back{position:absolute;inset:0;background:rgba(0,0,0,.18);display:flex;align-items:flex-end;padding:0 12px 84px;z-index:5}
+.sheet{width:100%;border-radius:30px;padding:14px;display:grid;grid-template-columns:104px 1fr;gap:14px;align-items:start}
+.sheet .ph{aspect-ratio:1;border-radius:20px;display:grid;place-items:center;padding:8px}
+.sheet .ph canvas{max-width:100%;max-height:100%}
+.sheet .info{display:grid;gap:4px;min-width:0}
+.sheet time{font-size:12px;color:var(--g-ink2);font-variant-numeric:tabular-nums}
+.sheet h3{margin:0;font-size:17px;font-weight:600}
+.sheet p{margin:0;font-size:15px;overflow-wrap:anywhere}
+.sheet .sbtn{background:rgba(127,127,135,.18);color:inherit}
+.acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.sbtn{border:0;background:var(--fill);border-radius:999px;padding:7px 13px;font-size:13px;font-weight:500}
+.sbtn.danger{color:var(--danger)}
+.sbtn.yes{background:var(--danger);color:#fff}
+
+/* scene menu */
+.scene-menu{position:absolute;right:18px;top:70px;width:220px;border-radius:24px;padding:8px;z-index:6;display:grid;gap:2px}
+.scene-menu h4{margin:4px 10px 6px;font-size:12px;font-weight:600;color:var(--g-ink2)}
+.sopt{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;border:0;background:none;color:inherit;padding:6px;border-radius:16px;text-align:left;font-size:15px;font-weight:500}
+.sopt:hover{background:rgba(127,127,135,.14)}
+.sopt canvas{width:44px;height:44px;border-radius:12px;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.1)}
+.sopt svg{width:18px;height:18px}
+
+/* edit bar */
+.editbar{position:absolute;left:50%;bottom:88px;transform:translateX(-50%);display:flex;gap:2px;padding:5px;border-radius:999px;z-index:4;max-width:calc(100% - 24px);overflow-x:auto;scrollbar-width:none}
+.ebtn{flex:none;height:42px;min-width:42px;border-radius:999px;border:0;background:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:0 12px;font-size:13px;font-weight:600;white-space:nowrap;color:inherit}
+.ebtn svg{width:19px;height:19px}
+.ebtn:active{background:rgba(127,127,135,.2)}
+.ebtn.done{background:var(--g-ink);color:var(--g)}
+.space[data-scene="space"] .ebtn.done{background:#F5F5F7;color:#0E0E10}
+.edit-tip{position:absolute;left:50%;top:84px;transform:translateX(-50%);font-size:12.5px;padding:6px 12px;border-radius:999px;white-space:nowrap;pointer-events:none;z-index:4}
+
+/* forms & record */
+h1.vt{font-size:30px;font-weight:700;letter-spacing:-.025em;margin:2px 0 0;line-height:1.15;text-wrap:balance}
+.lede{margin:-4px 0 0;color:var(--muted);font-size:15px}
+.label{font-size:13px;color:var(--muted);font-weight:500;margin-top:4px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;min-height:50px;padding:0 20px;font-size:16px;font-weight:600;background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn.ghost{background:var(--fill);color:var(--ink)}
+.btn.plain{background:none;color:var(--muted);min-height:40px;font-weight:500;font-size:15px}
+.btn[disabled]{opacity:.35;cursor:not-allowed}
+.btn svg{width:19px;height:19px}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.row .btn{flex:1 1 140px}
+.sr{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.empty{background:var(--surface);border-radius:22px;padding:24px 18px;text-align:center;color:var(--muted);display:grid;gap:4px;justify-items:center;font-size:14px}
+.empty svg{width:34px;height:34px;color:var(--muted);margin-bottom:4px}
+.work{display:grid;gap:12px}
+.stage2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.frame{background:var(--surface);border-radius:22px;overflow:hidden;display:grid;grid-template-rows:auto 1fr;min-width:0}
+.frame b{font-size:12px;color:var(--muted);padding:10px 14px 4px;font-weight:500}
+.frame .pic{aspect-ratio:1;max-width:100%;display:grid;place-items:center;padding:8px}
+.checker{background-color:var(--surface-2);background-image:conic-gradient(var(--fill) 25%,transparent 0 50%,var(--fill) 0 75%,transparent 0);background-size:14px 14px}
+.frame canvas{max-width:100%;max-height:100%;display:block}
+.panel{background:var(--surface);border-radius:22px;padding:16px;display:grid;gap:14px}
+.slider-row{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;font-size:15px}
+.slider-row output{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--muted);min-width:2ch;text-align:right;font-size:13px}
+input[type=range]{accent-color:var(--ink);width:100%}
+.field{display:grid;gap:6px;font-size:13px;color:var(--muted)}
+input.text,input[type=date]{border:0;background:var(--fill);border-radius:12px;padding:12px 14px;font-size:16px;width:100%;color:var(--ink)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:8px}
+.note{font-size:13px;color:var(--muted);margin:0;padding:0 4px}
+.warn{color:var(--danger);font-size:13px;margin:0}
+
+/* pet form */
+.petform{display:grid;gap:18px}
+.avatar-pick{justify-self:center;display:grid;justify-items:center;gap:10px}
+.avatar-btn{width:128px;height:128px;border-radius:50%;border:0;padding:0;position:relative;background:none;box-shadow:0 10px 30px rgba(0,0,0,.15)}
+.avatar-btn canvas{width:100%;height:100%;border-radius:50%;display:block}
+.avatar-btn .cam{position:absolute;right:0;bottom:0;width:36px;height:36px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;box-shadow:0 0 0 3px var(--bg)}
+.avatar-btn .cam svg{width:18px;height:18px}
+.avatar-pick small{color:var(--muted);font-size:13px;text-align:center}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:2px;background:var(--fill);border-radius:10px;padding:2px}
+.seg button{border:0;background:none;border-radius:8px;padding:7px 6px;font-size:14px;font-weight:500;color:var(--ink);display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.seg button[aria-pressed="true"]{background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04);font-weight:600}
+.seg i{width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.2)}
+.swatches{display:flex;gap:12px;flex-wrap:wrap}
+.sw{width:30px;height:30px;border-radius:50%;border:0}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--ink)}
+
+/* modal / onboarding */
+.modal{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;z-index:20;
+  padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.modal-body{flex:1;min-height:0;overflow:auto;display:grid;gap:18px;align-content:start;padding-block:6px 16px}
+.modal-foot{display:grid;gap:8px;padding-block:10px max(14px,env(safe-area-inset-bottom,0px))}
+.onb{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;background:var(--bg);
+  padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px))}
+.onb-top{display:flex;justify-content:space-between;align-items:center;padding-block:12px 4px;min-height:52px}
+.dots{display:flex;gap:6px}
+.dots i{width:7px;height:7px;border-radius:99px;background:var(--fill-2);transition:width .25s}
+.dots i.on{width:18px;background:var(--ink)}
+.onb-body{flex:1;min-height:0;overflow:auto;display:grid;align-content:center;gap:20px;padding-block:8px}
+.onb h2{margin:0;font-size:32px;font-weight:700;letter-spacing:-.03em;line-height:1.18;text-wrap:balance}
+.onb p.l{margin:0;color:var(--muted);font-size:16px}
+.hero-orbit{justify-self:center;width:236px;height:236px;position:relative;border-radius:50%;background:radial-gradient(circle at 50% 50%,#1C2148,#070915 70%);box-shadow:0 20px 50px rgba(0,0,0,.25);overflow:hidden}
+.hero-orbit .pl{position:absolute;inset:78px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFE9D2,#FFB36B 45%,#B4652A)}
+.hero-orbit .rg{position:absolute;inset:38px;border-radius:50%;border:1px solid rgba(255,255,255,.12)}
+.hero-orbit .rg.b{inset:12px}
+.hero-orbit canvas{position:absolute;width:58px;height:58px;object-fit:contain}
+.steps{display:grid;gap:0;background:var(--surface);border-radius:22px;overflow:hidden}
+.st{display:grid;grid-template-columns:36px 1fr;gap:14px;align-items:center;padding:14px 16px}
+.st + .st{border-top:.5px solid var(--line)}
+.st .ic{width:36px;height:36px;border-radius:10px;background:var(--fill);display:grid;place-items:center;color:var(--ink)}
+.st .ic svg{width:20px;height:20px}
+.st b{display:block;font-size:16px;font-weight:600}
+.st span{font-size:14px;color:var(--muted)}
+.onb-foot{display:grid;gap:4px;padding-block:10px max(18px,env(safe-area-inset-bottom,0px))}
+.check{display:flex;gap:10px;align-items:center;font-size:15px;color:var(--ink)}
+.check input{accent-color:var(--ink);width:20px;height:20px}
+
+/* settings */
+.sec{display:grid;gap:6px}
+.sec h2{margin:10px 16px 0;font-size:13px;color:var(--muted);font-weight:500}
+.group{background:var(--surface);border-radius:22px;overflow:hidden}
+.srow{display:flex;align-items:center;gap:12px;padding:11px 16px;min-height:52px;width:100%;background:none;border:0;text-align:left;position:relative}
+.srow + .srow,.group > div + .srow,.srow + div > .srow{box-shadow:inset 0 .5px 0 var(--line)}
+.srow .tx{flex:1;min-width:0;display:grid}
+.srow .tx b{font-weight:400;font-size:16px}
+.srow .tx span{font-size:13px;color:var(--muted)}
+.srow canvas{width:36px;height:36px;border-radius:50%;flex:none}
+.srow .chev{color:var(--muted);width:16px;height:16px;flex:none;opacity:.7}
+.srow .val{font-size:15px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tog{appearance:none;-webkit-appearance:none;width:51px;height:31px;border-radius:99px;background:var(--fill-2);position:relative;flex:none;cursor:pointer;transition:background .2s;margin:0}
+.tog::after{content:"";position:absolute;top:2px;left:2px;width:27px;height:27px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.18),0 0 0 .5px rgba(0,0,0,.04);transition:transform .2s}
+.tog:checked{background:var(--on)}
+.tog:checked::after{transform:translateX(20px)}
+.srow.wide{display:grid;gap:10px}
+.danger-t{color:var(--danger)}
+
+/* timeline */
+.month{display:grid;gap:0;background:var(--surface);border-radius:22px;overflow:hidden}
+.month h2{margin:0;padding:12px 16px 4px;font-size:13px;color:var(--muted);font-weight:500}
+.item{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:12px;align-items:center;background:none;border:0;padding:8px 16px;text-align:left;width:100%}
+.item + .item{box-shadow:inset 72px .5px 0 var(--surface),inset 0 .5px 0 var(--line)}
+.item .ph{width:56px;height:56px;border-radius:14px;display:grid;place-items:center;padding:4px}
+.item .ph canvas{max-width:100%;max-height:100%}
+.item time{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.item p{margin:0;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .who{font-size:12.5px;color:var(--muted);display:inline-flex;align-items:center;gap:5px}
+.item .who i{width:8px;height:8px;border-radius:50%}
+
+/* floating tab bar */
+.tabs{position:absolute;left:50%;transform:translateX(-50%);bottom:max(24px,env(safe-area-inset-bottom,0px));
+  display:grid;grid-template-columns:repeat(3,72px);gap:2px;padding:4px;border-radius:999px;z-index:10}
+.tab{border:0;background:none;display:grid;justify-items:center;gap:0;padding:6px 0 5px;border-radius:999px;color:var(--g-ink2);font-size:10px;font-weight:600}
+.tab svg{width:22px;height:22px}
+.tab[aria-selected="true"]{color:var(--g-ink);background:rgba(127,127,135,.2)}
+.app[data-on="sky"][data-scene="space"] .tabs{--g:rgba(36,38,52,.45); --g-edge:rgba(255,255,255,.22); --g-ink:#F5F5F7; --g-ink2:rgba(235,235,245,.68)}
+.app[data-on="sky"]:not([data-scene="space"]) .tabs{--g:rgba(255,255,255,.58); --g-edge:rgba(255,255,255,.9); --g-ink:#0E0E10; --g-ink2:rgba(60,60,67,.65)}
+@media (prefers-reduced-motion: reduce){.toast,.dots i,.tog,.tog::after{transition:none}}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  :root{--g:rgba(250,250,252,.96)} .space[data-scene="space"]{--g:rgba(30,32,44,.94)}
+}
+</style>
+
+<div class="app" id="app">
+  <header class="top">
+    <div id="top-l"></div>
+    <div class="top-r">
+      <span class="pill">베타</span>
+      <button class="ibtn" id="btn-settings" aria-label="설정"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+    </div>
+  </header>
+
+  <main>
+    <!-- UNIVERSE -->
+    <section class="view" id="view-sky" aria-label="우주">
+      <div class="chips" id="chips"></div>
+      <div class="space" id="space">
+        <canvas id="sky"></canvas>
+        <div class="caption"><strong id="cap-title"></strong><span id="cap-sub"></span></div>
+        <button class="scene-btn" id="btn-scene" aria-label="배경 바꾸기" aria-haspopup="true"></button>
+        <div class="scene-menu" id="scene-menu" hidden></div>
+        <div class="empty-space" id="space-empty" hidden></div>
+        <div class="toast" id="toast"></div>
+        <div class="fabs">
+          <button class="fab icon" id="btn-fit" aria-label="전체 보기" title="전체 보기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+          <button class="fab primary" id="btn-rec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>기록하기</button>
+        </div>
+        <div class="edit-tip" id="edit-tip" hidden>끌어서 자리 옮기기 · 아래 버튼으로 방향 바꾸기</div>
+        <div class="editbar" id="editbar" hidden>
+          <button class="ebtn" id="e-ccw" aria-label="왼쪽으로 15도"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.6-5.9"/><path d="M4 4v5h5"/></svg></button>
+          <button class="ebtn" id="e-cw" aria-label="오른쪽으로 15도"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 4v5h-5"/></svg></button>
+          <button class="ebtn" id="e-up"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V5"/><path d="M6 11l6-6 6 6"/></svg>바로 세우기</button>
+          <button class="ebtn" id="e-flip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M8 7L3 12l5 5V7z"/><path d="M16 7l5 5-5 5V7z"/></svg>좌우 반전</button>
+          <button class="ebtn" id="e-free" hidden>고정 풀기</button>
+          <button class="ebtn done" id="e-done">여기에 고정</button>
+        </div>
+        <div class="sheet-back" id="sheet" hidden></div>
+      </div>
+      <p class="hint">끌어서 둘러보기 · 휠·두 손가락으로 확대 · 모습을 길게 누르면 방향·자리 바꾸기 · 탭하면 기록 보기</p>
+    </section>
+
+    <!-- RECORD -->
+    <section class="view" id="view-rec" aria-label="기록하기" hidden>
+      <h1 class="vt">오늘의 모습 남기기</h1>
+      <p class="lede">사진을 고르면 배경을 지우고, 그 자세 그대로 우주에 띄워요.</p>
+      <div class="label">누구의 모습인가요?</div>
+      <div class="chips" id="rec-chips"></div>
+      <div class="row">
+        <label class="btn" for="file-cam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>카메라로 찍기</label>
+        <label class="btn ghost" for="file-album"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 16l5-5 4 4 3-3 6 6"/><circle cx="16" cy="9" r="1.6"/></svg>앨범에서 고르기</label>
+        <input class="sr" type="file" id="file-cam" accept="image/*" capture="environment">
+        <input class="sr" type="file" id="file-album" accept="image/*">
+      </div>
+      <button class="btn ghost" id="btn-sample">예시 사진으로 해보기</button>
+      <div class="empty" id="rec-empty">
+        <svg viewBox="0 0 48 48" fill="currentColor"><ellipse cx="24" cy="32" rx="9" ry="7.5"/><ellipse cx="12" cy="21" rx="4.2" ry="5.4"/><ellipse cx="36" cy="21" rx="4.2" ry="5.4"/><ellipse cx="18.5" cy="12.5" rx="4" ry="5.2"/><ellipse cx="29.5" cy="12.5" rx="4" ry="5.2"/></svg>
+        <strong style="color:var(--ink)">아직 고른 사진이 없어요</strong>
+        <span>몸 전체가 보이게 찍으면 자세가 잘 살아나요.</span>
+      </div>
+      <div class="work" id="rec-work" hidden>
+        <div class="stage2">
+          <div class="frame"><b>원본</b><div class="pic"><canvas id="c-src"></canvas></div></div>
+          <div class="frame"><b>누끼</b><div class="pic checker"><canvas id="c-cut"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="slider-row">
+            <label for="sens">배경 민감도</label>
+            <input type="range" id="sens" min="10" max="90" value="34">
+            <output id="sens-v">34</output>
+          </div>
+          <p class="warn" id="cut-warn" hidden>아이를 찾지 못했어요. 민감도를 조절하거나 배경이 단순한 사진으로 다시 시도해 보세요.</p>
+          <div class="two">
+            <label class="field" for="m-date">날짜<input type="date" id="m-date"></label>
+            <label class="field" for="m-memo">한 줄 메모<input class="text" id="m-memo" maxlength="40" placeholder="예: 창가에서 식빵 굽는 중"></label>
+          </div>
+          <button class="btn" id="btn-launch">우주에 띄우기</button>
+        </div>
+      </div>
+      <p class="note">지금 버전은 사진의 배경색을 추정해 지워요. 배경이 단순할수록 깔끔하게 잘려요. 기록은 이 기기에만 저장돼요.</p>
+    </section>
+
+    <!-- TIMELINE -->
+    <section class="view" id="view-time" aria-label="타임라인" hidden>
+      <h1 class="vt">모아 본 모습들</h1>
+      <div id="timeline" style="display:grid;gap:12px"></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="view" id="view-set" aria-label="설정" hidden></section>
+  </main>
+
+  <nav class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" data-view="sky" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><ellipse cx="12" cy="12" rx="10" ry="3.6" transform="rotate(-20 12 12)"/></svg>우주</button>
+    <button class="tab" role="tab" data-view="rec" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>기록하기</button>
+    <button class="tab" role="tab" data-view="time" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 4v16M7 7h11M7 12h8M7 17h10"/></svg>타임라인</button>
+  </nav>
+
+  <div class="modal" id="modal" hidden></div>
+  <div class="onb" id="onb" hidden></div>
+  <input class="sr" type="file" id="file-avatar" accept="image/*">
+</div>
+
+<script src="matter.min.js"></script>
+<script>
+(() => {
+const { Engine, Bodies, Body, Composite, Query, Sleeping } = Matter;
+const KEY = 'petuniverse.v1';
+const HUES = ['#FFB36B','#8FD6C4','#A9B8FF','#FF9DBB','#F2DD7A','#9FD3FF','#C9A6FF','#B9E58A'];
+const SPECIES = { cat:'고양이', dog:'강아지', etc:'그 밖의 친구' };
+const SCENES = { space:{ name:'우주', sw:'#14183A' }, sky:{ name:'하늘', sw:'#CFE4F7' }, white:{ name:'침대', sw:'#ECEAE6' } };
+const SCENE_ICON = {
+  space:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
+  sky:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  white:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18V7"/><path d="M3 14h18v4"/><path d="M21 14v-2a3 3 0 0 0-3-3h-7v5"/><rect x="5" y="10" width="4" height="3" rx="1.2"/></svg>'
+};
+let BED = null;
+function bedTexture(){
+  if (BED) return BED;
+  const N = 1100, c = mk(N,N), g = c.getContext('2d');
+  const base = g.createLinearGradient(0,0,N,N); base.addColorStop(0,'#F7F6F3'); base.addColorStop(1,'#ECEAE6');
+  g.fillStyle = base; g.fillRect(0,0,N,N);
+  // soft folds: draw each crease far off-canvas and let only its blurred shadow land on the sheet
+  const fold = (pts, w, col, blur, dx, dy) => {
+    g.save(); g.shadowColor = col; g.shadowBlur = blur; g.shadowOffsetX = 3000 + dx; g.shadowOffsetY = dy;
+    g.strokeStyle = '#000'; g.lineWidth = w; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(pts[0][0]-3000, pts[0][1]); g.bezierCurveTo(pts[1][0]-3000, pts[1][1], pts[2][0]-3000, pts[2][1], pts[3][0]-3000, pts[3][1]); g.stroke(); g.restore();
+  };
+  let seed = 7; const rnd = () => (seed = (seed*16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 16; i++){
+    const y0 = rnd()*N, ang = (rnd()-.5)*.9, len = N*(.5 + rnd()*.8), x0 = rnd()*N*.6 - N*.2;
+    const pts = [[x0, y0], [x0 + len*.33, y0 + Math.sin(ang)*len*.33 + (rnd()-.5)*160], [x0 + len*.66, y0 + Math.sin(ang)*len*.66 + (rnd()-.5)*160], [x0 + len, y0 + Math.sin(ang)*len]];
+    const w = 18 + rnd()*40;
+    fold(pts, w, 'rgba(70,60,50,.10)', 26 + rnd()*20, 0, 6);
+    fold(pts, w*.55, 'rgba(255,255,255,.95)', 14 + rnd()*10, 0, -w*.45);
+  }
+  // fine cotton weave
+  const id = g.getImageData(0,0,N,N), d = id.data;
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++){
+    const i = (y*N + x)*4, v = (Math.random()-.5)*5 + ((x + y) % 3 === 0 ? 1.2 : 0) - ((x - y) % 4 === 0 ? 1 : 0);
+    d[i] += v; d[i+1] += v; d[i+2] += v;
+  }
+  g.putImageData(id,0,0);
+  return BED = c;
+}
+const CLOUDS = Array.from({ length: 9 }, () => ({ x: Math.random(), y: Math.random(), s: .6 + Math.random()*.9 }));
+const $ = s => document.querySelector(s);
+const mk = (w,h) => { const c = document.createElement('canvas'); c.width = Math.max(1,w|0); c.height = Math.max(1,h|0); return c; };
+const pad2 = n => String(n).padStart(2,'0');
+const ymd = d => `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+const today = () => ymd(new Date());
+const fmt = s => s.replaceAll('-', '.');
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+/* ================= data ================= */
+const DEFAULT_SET = { defBg:'space', twinkle:true, rings:true, feel:'cozy', sens:34, autoDate:true, remind:false };
+function seed(){
+  return {
+    v: 2, onboarded: false, cur: 'ex', settings: { ...DEFAULT_SET },
+    pets: [{ id:'ex', name:'치즈', hue:'#FFB36B', species:'cat', bg:'space', example:true }],
+    moments: [
+      { id:'e1', pet:'ex', kind:'sit',     date:'2026-03-14', memo:'처음 집에 온 날, 얌전히 앉아서', size:86 },
+      { id:'e2', pet:'ex', kind:'loaf',    date:'2026-04-02', memo:'햇살 자리에서 식빵 굽기', size:92 },
+      { id:'e3', pet:'ex', kind:'stretch', date:'2026-05-19', memo:'자고 일어나 기지개 쭉', size:96 },
+      { id:'e4', pet:'ex', kind:'belly',   date:'2026-07-08', memo:'더운 날 배 보이고 발라당', size:94 },
+      { id:'e5', pet:'ex', kind:'walk',    date:'2026-08-27', memo:'간식 소리에 총총총', size:88 },
+      { id:'e6', pet:'ex', kind:'curl',    date:'2026-10-21', memo:'쌀쌀해지니 동그랗게', size:84 }
+    ]
+  };
+}
+let DB;
+try { DB = JSON.parse(localStorage.getItem(KEY)) || seed(); } catch(e){ DB = seed(); }
+DB.settings = { ...DEFAULT_SET, ...(DB.settings || {}) };
+DB.pets.forEach(p => { p.species ||= 'cat'; p.bg ||= 'space'; });
+if (DB.v !== 2){ DB.v = 2; if (DB.onboarded === undefined) DB.onboarded = false; }
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(DB)); return true; } catch(e){ toast('저장 공간이 부족해요'); return false; } }
+const petById = id => DB.pets.find(p => p.id === id);
+const momentsOf = id => DB.moments.filter(m => m.pet === id).sort((a,b) => a.date.localeCompare(b.date));
+const S = () => DB.settings;
+
+/* ================= drawing ================= */
+function cropToAlpha(c, pad = 4, th = 30){
+  const g = c.getContext('2d'), { width:w, height:h } = c, d = g.getImageData(0,0,w,h).data;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y*w+x)*4+3] > th){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
+  if (x1 < 0) return null;
+  x0 = Math.max(0,x0-pad); y0 = Math.max(0,y0-pad); x1 = Math.min(w-1,x1+pad); y1 = Math.min(h-1,y1+pad);
+  const o = mk(x1-x0+1, y1-y0+1); o.getContext('2d').drawImage(c, x0, y0, o.width, o.height, 0, 0, o.width, o.height);
+  return o;
+}
+function drawPose(kind){
+  const c = mk(300,300), g = c.getContext('2d');
+  const b='#F0A35E', s='#D47F37', l='#FBE3C6', pk='#F5B3AA', dk='#1D1D26';
+  const E=(x,y,rx,ry,col,r=0)=>{g.fillStyle=col;g.beginPath();g.ellipse(x,y,rx,ry,r,0,Math.PI*2);g.fill();};
+  const T=(p,col)=>{g.fillStyle=col;g.beginPath();g.moveTo(...p[0]);p.slice(1).forEach(q=>g.lineTo(...q));g.closePath();g.fill();};
+  const L=(p,col,w)=>{g.strokeStyle=col;g.lineWidth=w;g.lineCap='round';g.lineJoin='round';g.beginPath();g.moveTo(...p[0]);
+    if(p.length===3) g.quadraticCurveTo(...p[1],...p[2]); else p.slice(1).forEach(q=>g.lineTo(...q)); g.stroke();};
+  const shut=(x,y)=>L([[x-8,y],[x,y+6],[x+8,y]],'#3A2618',3.5);
+  switch(kind){
+    case 'sit':
+      L([[195,255],[268,250],[246,172]],b,24); E(150,205,62,78,b); E(150,222,32,46,l);
+      E(124,278,20,12,b); E(176,278,20,12,b);
+      T([[104,92],[112,36],[144,66]],b); T([[196,92],[188,36],[156,66]],b);
+      T([[113,82],[117,52],[134,68]],pk); T([[187,82],[183,52],[166,68]],pk);
+      E(150,110,55,48,b);
+      L([[150,64],[150,82]],s,6); L([[133,68],[137,82]],s,5); L([[167,68],[163,82]],s,5);
+      L([[93,190],[113,195]],s,7); L([[207,190],[187,195]],s,7); L([[91,216],[111,219]],s,7); L([[209,216],[189,219]],s,7);
+      E(130,108,7,8,dk); E(170,108,7,8,dk); E(132,105,2.5,2.5,'#fff'); E(172,105,2.5,2.5,'#fff');
+      T([[144,124],[156,124],[150,131]],'#E07F74'); break;
+    case 'loaf':
+      E(254,212,22,42,b,.35); g.fillStyle=b; g.beginPath(); g.roundRect(48,138,214,112,56); g.fill();
+      E(160,238,82,16,l); L([[170,150],[172,180]],s,8); L([[205,150],[205,182]],s,8); L([[235,160],[232,188]],s,8);
+      T([[56,132],[58,80],[94,108]],b); T([[144,132],[142,80],[106,108]],b);
+      T([[64,120],[65,92],[86,108]],pk); T([[136,120],[135,92],[114,108]],pk);
+      E(100,150,52,46,b); E(100,172,27,17,l); shut(85,150); shut(115,150);
+      T([[95,164],[105,164],[100,170]],'#E07F74'); break;
+    case 'curl':
+      E(166,178,100,74,b); L([[130,160],[135,190]],s,9); L([[175,140],[178,172]],s,9); L([[220,150],[216,182]],s,9);
+      L([[78,220],[150,272],[250,226]],s,20);
+      T([[60,148],[56,96],[94,126]],b); T([[142,148],[146,96],[108,126]],b);
+      E(100,164,48,44,b); E(100,184,22,13,l); shut(84,162); shut(116,162); break;
+    case 'stretch':
+      L([[262,150],[292,120],[286,66]],b,12); L([[236,178],[244,250]],b,22); L([[214,180],[216,250]],s,20);
+      E(176,165,90,38,b,-.12); L([[160,132],[164,154]],s,7); L([[190,128],[192,150]],s,7); L([[220,124],[222,146]],s,7);
+      L([[110,192],[40,246]],b,20); L([[126,200],[62,252]],s,18);
+      T([[50,186],[42,148],[72,174]],b); T([[86,174],[100,140],[106,180]],b);
+      E(74,200,38,34,b); E(56,212,17,11,l); shut(66,196); E(42,208,5,4,'#E07F74'); break;
+    case 'walk':
+      L([[230,120],[272,100],[262,40]],b,13);
+      [[110,160,104,250,s],[200,158,206,248,s],[125,165,130,252,b],[220,152,232,246,b]].forEach(([a,bb,c2,d2,col])=>L([[a,bb],[c2,d2]],col,18));
+      E(160,140,80,40,b); E(160,162,55,16,l);
+      L([[150,104],[152,124]],s,7); L([[180,104],[178,124]],s,7); L([[206,110],[200,128]],s,7);
+      T([[42,80],[40,30],[72,60]],b); T([[88,64],[104,24],[108,72]],b);
+      E(72,94,40,36,b); E(58,110,18,12,l); E(62,90,5,6,dk); E(88,90,5,6,dk); T([[50,102],[58,102],[54,107]],'#E07F74'); break;
+    case 'belly':
+      [[110,152,100,96],[150,148,146,90],[195,150,204,96],[228,160,248,112]].forEach(([a,bb,c2,d2])=>{L([[a,bb],[c2,d2]],b,20); E(c2,d2,11,9,l);});
+      L([[262,205],[292,230],[286,262]],b,14); E(170,190,95,50,b); E(172,200,70,32,l);
+      T([[44,218],[16,244],[60,238]],b); T([[52,170],[20,156],[44,196]],b);
+      E(70,202,42,38,b); E(58,214,18,12,l); E(64,194,5,6,dk); E(86,206,5,6,dk); break;
+  }
+  return cropToAlpha(c, 4);
+}
+function shade(hex, f){ const n = parseInt(hex.slice(1),16); const ch = v => Math.max(0, Math.min(255, Math.round(v*(1+f))));
+  return `rgb(${ch(n>>16)},${ch(n>>8&255)},${ch(n&255)})`; }
+
+/* default planet art when no photo: species face on the pet's color */
+const artCache = new Map();
+function defaultArt(species, hue){
+  const key = species + hue; if (artCache.has(key)) return artCache.get(key);
+  const N = 256, c = mk(N,N), g = c.getContext('2d');
+  const bg = g.createRadialGradient(N*.38,N*.32,N*.05,N*.5,N*.5,N*.72); bg.addColorStop(0,'#FFFFFF'); bg.addColorStop(.3,hue); bg.addColorStop(1,shade(hue,-.4));
+  g.fillStyle = bg; g.fillRect(0,0,N,N);
+  const f = shade(hue,-.32); g.fillStyle = f; g.globalAlpha = .55;
+  const E=(x,y,rx,ry,r=0)=>{g.beginPath();g.ellipse(x,y,rx,ry,r,0,7);g.fill();};
+  if (species === 'cat'){
+    g.beginPath(); g.moveTo(70,118); g.lineTo(78,52); g.lineTo(122,92); g.fill();
+    g.beginPath(); g.moveTo(186,118); g.lineTo(178,52); g.lineTo(134,92); g.fill();
+    E(128,140,70,60);
+  } else if (species === 'dog'){
+    E(128,136,64,60); E(70,128,24,46,.35); E(186,128,24,46,-.35); E(128,166,30,22);
+  } else {
+    E(128,152,42,34); E(84,108,16,20,-.3); E(112,90,16,21,-.1); E(144,90,16,21,.1); E(172,108,16,20,.3);
+  }
+  g.globalAlpha = 1;
+  if (species !== 'etc'){ g.fillStyle = 'rgba(255,255,255,.75)'; E(104,136,7,8); E(152,136,7,8); }
+  artCache.set(key, c); return c;
+}
+const photoCache = new Map();
+function loadPhoto(p){
+  if (!p.photo) return Promise.resolve(null);
+  const k = p.id + ':' + p.photo.length;
+  if (photoCache.has(k)) return Promise.resolve(photoCache.get(k));
+  return new Promise(res => { const i = new Image(); i.onload = () => { photoCache.set(k, i); res(i); }; i.onerror = () => res(null); i.src = p.photo; });
+}
+function planetFace(p){ const k = p.id + ':' + (p.photo ? p.photo.length : 0); return (p.photo && photoCache.get(k)) || defaultArt(p.species, p.hue); }
+function avatar(p, px){
+  const c = mk(px*2, px*2), g = c.getContext('2d');
+  const paint = img => { g.clearRect(0,0,c.width,c.height); g.save(); g.beginPath(); g.arc(px,px,px,0,7); g.clip(); drawCover(g, img, 0, 0, px*2, px*2); g.restore(); };
+  paint(planetFace(p));
+  if (p.photo) loadPhoto(p).then(i => i && paint(i));
+  c.style.width = c.style.height = px + 'px';
+  return c;
+}
+function drawCover(g, img, x, y, w, h){
+  const iw = img.width, ih = img.height, s = Math.max(w/iw, h/ih), dw = iw*s, dh = ih*s;
+  g.drawImage(img, x + (w-dw)/2, y + (h-dh)/2, dw, dh);
+}
+
+/* ================= physics universe ================= */
+const PLANET_R = 62, CELL = 5;
+const W = { engine:null, bodies:[], fresh:null, freshT:0 };
+const imgCache = new Map();
+function momentImage(m){
+  if (imgCache.has(m.id)) return Promise.resolve(imgCache.get(m.id));
+  if (m.kind){ const c = drawPose(m.kind); imgCache.set(m.id, c); return Promise.resolve(c); }
+  return new Promise(res => { const i = new Image(); i.onload = () => { const c = mk(i.width,i.height); c.getContext('2d').drawImage(i,0,0); imgCache.set(m.id,c); res(c); }; i.onerror = () => res(null); i.src = m.data; });
+}
+function makeBody(m, cut, x, y, angle){
+  const sc = m.size / Math.max(cut.width, cut.height);
+  const w = Math.round(cut.width*sc), h = Math.round(cut.height*sc);
+  const img = mk(w,h), g = img.getContext('2d'); if (m.flip){ g.translate(w,0); g.scale(-1,1); } g.drawImage(cut, 0, 0, w, h); g.setTransform(1,0,0,1,0,0);
+  const d = g.getImageData(0,0,w,h).data, parts = [];
+  for (let y0 = 0; y0 < h; y0 += CELL){
+    let run = -1; const ch = Math.min(CELL, h - y0), cy = Math.min(h-1, y0 + (ch>>1));
+    for (let x0 = 0; x0 <= w; x0 += CELL){
+      const cx = Math.min(w-1, x0 + (CELL>>1)), on = x0 < w && d[(cy*w+cx)*4+3] > 120;
+      if (on && run < 0) run = x0;
+      if (!on && run >= 0){ const rw = Math.min(x0,w) - run; parts.push(Bodies.rectangle(run + rw/2, y0 + ch/2, rw, ch)); run = -1; }
+    }
+  }
+  if (!parts.length) parts.push(Bodies.rectangle(w/2, h/2, w, h));
+  const body = Body.create({ parts, friction:.9, frictionStatic:1.2, restitution:.05, frictionAir:.05, density:.0015 });
+  body.off = { x: body.position.x, y: body.position.y };
+  Body.setPosition(body, { x, y }); Body.setAngle(body, angle);
+  body.img = img; body.m = m;
+  return body;
+}
+function pull(){
+  const k = S().feel === 'float' ? .00022 : .0009;
+  for (const b of W.bodies){
+    if (b === drag?.body || b.isStatic) continue;
+    const dx = -b.position.x, dy = -b.position.y, r = Math.hypot(dx,dy) || 1;
+    Body.applyForce(b, b.position, { x: dx/r*b.mass*k, y: dy/r*b.mass*k });
+    if (S().feel === 'float' && !b.isSleeping) Body.setAngularVelocity(b, b.angularVelocity*.98 + .0004*Math.sin(performance.now()/1500 + b.id));
+  }
+}
+function applyFeel(){ W.bodies.forEach(b => { b.frictionAir = S().feel === 'float' ? .09 : .05; }); W.engine && (W.engine.enableSleeping = S().feel !== 'float'); }
+async function buildWorld(petId, opts = {}){
+  W.engine = Engine.create({ enableSleeping: S().feel !== 'float' });
+  W.engine.gravity.y = 0; W.engine.gravity.x = 0;
+  Composite.add(W.engine.world, Bodies.circle(0, 0, PLANET_R, { isStatic:true, friction:1, frictionStatic:1.5 }));
+  exitEdit(true); W.bodies = []; W.fresh = null;
+  const p = petById(petId); if (p) loadPhoto(p);
+  const list = momentsOf(petId).sort((a,b) => (a.id === opts.launch) - (b.id === opts.launch));
+  for (const m of list.filter(x => x.pin && x.id !== opts.launch)){
+    const cut = await momentImage(m); if (!cut) continue;
+    const b = makeBody(m, cut, m.pin.x, m.pin.y, m.pin.a); Body.setStatic(b, true);
+    Composite.add(W.engine.world, b); W.bodies.push(b);
+  }
+  for (const m of list.filter(x => !x.pin || x.id === opts.launch)){
+    const cut = await momentImage(m); if (!cut) continue;
+    const isNew = opts.launch === m.id, a = hashAngle(m.id), r = isNew ? 900 : 420;
+    const b = makeBody(m, cut, Math.cos(a)*r, Math.sin(a)*r, a + Math.PI/2);
+    Composite.add(W.engine.world, b); W.bodies.push(b);
+    if (isNew){ W.fresh = b; W.freshT = 4000; Body.setVelocity(b, { x:-Math.cos(a)*9, y:-Math.sin(a)*9 }); }
+    else for (let k = 0; k < 140; k++){ pull(); Engine.update(W.engine, 1000/60); }
+  }
+  applyFeel();
+  if (!opts.launch) for (let k = 0; k < 120; k++){ pull(); Engine.update(W.engine, 1000/60); }
+  cam.user = false;
+  if (!W.fresh) fitNow();
+}
+function hashAngle(id){ let h = 0; for (const ch of id) h = (h*31 + ch.charCodeAt(0)) | 0; return ((h >>> 0) % 628) / 100; }
+
+const cv = $('#sky'), ctx = cv.getContext('2d');
+let CW = 0, CH = 0, DPR = 1;
+const cam = { x:0, y:0, z:1, tx:0, ty:0, tz:1, user:false };
+function size(){ const r = $('#space').getBoundingClientRect(); CW = r.width; CH = r.height; DPR = window.devicePixelRatio || 1; cv.width = CW*DPR; cv.height = CH*DPR; }
+function fitTarget(){
+  let R = PLANET_R + 40;
+  for (const b of W.bodies){ const d = Math.hypot(b.position.x, b.position.y) + 55; if (d < 600 && d > R) R = d; }
+  return Math.min(2.2, Math.min(CW, CH - 40) / 2 / R);
+}
+function fitNow(){ cam.tx = cam.x = 0; cam.ty = cam.y = 0; cam.tz = cam.z = fitTarget(); }
+const STARS = Array.from({ length: 260 }, () => ({ x:Math.random(), y:Math.random(), r:Math.random()*1.3+.2, p:Math.random()*6.28, d:Math.random()*.6+.2 }));
+const toWorld = (sx, sy) => ({ x:(sx - CW/2)/cam.z + cam.x, y:(sy - CH/2)/cam.z + cam.y });
+function render(t){
+  const g = ctx; g.setTransform(DPR,0,0,DPR,0,0);
+  const pet = petById(DB.cur), scene = pet ? pet.bg : 'space', dark = scene === 'space';
+  if (scene === 'space'){
+    const bg = g.createRadialGradient(CW*.5, CH*.45, 0, CW*.5, CH*.45, Math.max(CW,CH)*.8);
+    bg.addColorStop(0,'#141838'); bg.addColorStop(.6,'#090B20'); bg.addColorStop(1,'#03040C');
+    g.fillStyle = bg; g.fillRect(0,0,CW,CH);
+    g.fillStyle = '#fff';
+    for (const st of STARS){
+      const x = ((st.x*CW - cam.x*st.d*.15) % CW + CW) % CW, y = ((st.y*CH - cam.y*st.d*.15) % CH + CH) % CH;
+      g.globalAlpha = S().twinkle ? .3 + .5*(.5 + .5*Math.sin(t/900 + st.p)) : .55;
+      g.beginPath(); g.arc(x, y, st.r, 0, 7); g.fill();
+    }
+    g.globalAlpha = 1;
+  } else if (scene === 'sky'){
+    const bg = g.createLinearGradient(0,0,0,CH); bg.addColorStop(0,'#B9D9F6'); bg.addColorStop(.55,'#DCEBF9'); bg.addColorStop(1,'#F7FAFD');
+    g.fillStyle = bg; g.fillRect(0,0,CW,CH);
+    g.fillStyle = 'rgba(255,255,255,.75)';
+    for (const c of CLOUDS){
+      const w = 90*c.s, x = ((c.x*(CW+w*2) - cam.x*.08*c.s) % (CW+w*2) + (CW+w*2)) % (CW+w*2) - w, y = c.y*CH*.9 - cam.y*.05*c.s;
+      g.beginPath(); g.ellipse(x, y, w*.55, w*.22, 0, 0, 7); g.ellipse(x - w*.28, y + w*.05, w*.32, w*.17, 0, 0, 7); g.ellipse(x + w*.22, y - w*.08, w*.3, w*.2, 0, 0, 7); g.fill();
+    }
+  } else {
+    const tex = bedTexture(), sz = Math.max(CW, CH)*1.35;
+    const ox = Math.max(-(sz-CW), Math.min(0, -(sz-CW)/2 - cam.x*.06)), oy = Math.max(-(sz-CH), Math.min(0, -(sz-CH)/2 - cam.y*.06));
+    g.drawImage(tex, ox, oy, sz, sz);
+    const vg = g.createRadialGradient(CW/2, CH/2, Math.min(CW,CH)*.3, CW/2, CH/2, Math.max(CW,CH)*.75);
+    vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(60,50,40,.10)'); g.fillStyle = vg; g.fillRect(0,0,CW,CH);
+  }
+  if (!pet) return;
+  g.setTransform(DPR*cam.z, 0, 0, DPR*cam.z, DPR*(CW/2 - cam.x*cam.z), DPR*(CH/2 - cam.y*cam.z));
+  const hue = pet.hue;
+  const glow = g.createRadialGradient(0,0,PLANET_R*.6,0,0,PLANET_R*2.1); glow.addColorStop(0, hue + (dark ? '55' : '3A')); glow.addColorStop(1, hue + '00');
+  g.fillStyle = glow; g.beginPath(); g.arc(0,0,PLANET_R*2.1,0,7); g.fill();
+  // planet face: photo or default art, clipped to the circle
+  g.save(); g.beginPath(); g.arc(0,0,PLANET_R,0,7); g.clip();
+  drawCover(g, planetFace(pet), -PLANET_R, -PLANET_R, PLANET_R*2, PLANET_R*2);
+  const sh = g.createRadialGradient(-PLANET_R*.4,-PLANET_R*.45,PLANET_R*.2,0,0,PLANET_R*1.05);
+  sh.addColorStop(0,'rgba(255,255,255,.12)'); sh.addColorStop(.6,'rgba(0,0,0,0)'); sh.addColorStop(1,'rgba(0,0,20,.45)');
+  g.fillStyle = sh; g.fillRect(-PLANET_R,-PLANET_R,PLANET_R*2,PLANET_R*2);
+  g.restore();
+  g.lineWidth = 3; g.strokeStyle = hue; g.beginPath(); g.arc(0,0,PLANET_R,0,7); g.stroke();
+  // name tag
+  g.font = '600 13px -apple-system, "Apple SD Gothic Neo", "IBM Plex Sans KR", system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  const tw = g.measureText(pet.name).width + 20, ty = PLANET_R*.6;
+  g.fillStyle = dark ? 'rgba(20,22,34,.66)' : 'rgba(255,255,255,.85)'; g.beginPath(); g.roundRect(-tw/2, ty-11, tw, 22, 11); g.fill();
+  g.fillStyle = dark ? '#fff' : '#0E0E10'; g.fillText(pet.name, 0, ty+1);
+  for (const b of W.bodies){
+    g.save(); g.translate(b.position.x, b.position.y); g.rotate(b.angle);
+    if (b === W.fresh && W.freshT > 0){ g.shadowColor = dark ? '#FFE3B8' : hue; g.shadowBlur = 28*Math.min(1, W.freshT/1500); }
+    else if (b === sel){ g.shadowColor = dark ? '#FFFFFF' : 'rgba(0,0,0,.35)'; g.shadowBlur = 18; }
+    else if (!dark){ g.shadowColor = scene === 'white' ? 'rgba(60,45,30,.24)' : 'rgba(0,0,0,.16)'; g.shadowBlur = scene === 'white' ? 12 : 8; g.shadowOffsetY = scene === 'white' ? 4 : 2; }
+    g.drawImage(b.img, -b.off.x, -b.off.y); g.restore();
+  }
+  if (edit){
+    const b = edit.body, r = Math.max(b.img.width, b.img.height)*.62;
+    g.save(); g.translate(b.position.x, b.position.y);
+    g.strokeStyle = dark ? 'rgba(255,255,255,.85)' : 'rgba(0,0,0,.55)'; g.lineWidth = 1.5/cam.z; g.setLineDash([6/cam.z, 6/cam.z]); g.lineDashOffset = -t/60/cam.z;
+    g.beginPath(); g.arc(0,0,r,0,7); g.stroke(); g.setLineDash([]);
+    g.rotate(b.angle); g.fillStyle = dark ? '#fff' : '#0E0E10'; g.beginPath(); g.arc(0,-r,5/cam.z,0,7); g.fill();
+    g.restore();
+  }
+}
+let last = performance.now(), acc = 0;
+function frame(t){
+  const dt = Math.min(100, t - last); last = t;
+  if (W.engine){
+    acc += dt; while (acc >= 1000/60){ pull(); Engine.update(W.engine, 1000/60); acc -= 1000/60; }
+    if (W.freshT > 0) W.freshT -= dt;
+    if (!cam.user && !drag) cam.tz += (fitTarget() - cam.tz) * .02;
+    cam.x += (cam.tx - cam.x)*.12; cam.y += (cam.ty - cam.y)*.12; cam.z += (cam.tz - cam.z)*.12;
+    if (!$('#view-sky').hidden) render(t);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* pointer: pan, pinch, drag poses, tap */
+const ptrs = new Map(); let drag = null, pinch = null, sel = null;
+cv.addEventListener('pointerdown', e => {
+  cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x:e.offsetX, y:e.offsetY });
+  if (ptrs.size === 2){ const [a,b] = [...ptrs.values()]; pinch = { d:Math.hypot(a.x-b.x, a.y-b.y), z:cam.tz }; drag = null; return; }
+  const w = toWorld(e.offsetX, e.offsetY), hit = Query.point(W.bodies, w)[0];
+  drag = { sx:e.offsetX, sy:e.offsetY, moved:false, body: hit ? (hit.parent || hit) : null, cx:cam.tx, cy:cam.ty, last:w, vx:0, vy:0 };
+  if (drag.body){ drag.gx = w.x - drag.body.position.x; drag.gy = w.y - drag.body.position.y; Sleeping.set(drag.body, false);
+    if (!edit || edit.body !== drag.body){ const d0 = drag; d0.lpT = setTimeout(() => { if (drag === d0 && !d0.moved){ d0.lp = true; enterEdit(d0.body); try { navigator.vibrate && navigator.vibrate(12); } catch(_){} } }, 480); } }
+  cv.style.cursor = 'grabbing';
+});
+cv.addEventListener('pointermove', e => {
+  if (!ptrs.has(e.pointerId)) return;
+  ptrs.set(e.pointerId, { x:e.offsetX, y:e.offsetY });
+  if (pinch && ptrs.size === 2){ const [a,b] = [...ptrs.values()]; cam.user = true; cam.tz = clampZ(pinch.z*Math.hypot(a.x-b.x, a.y-b.y)/pinch.d); return; }
+  if (!drag) return;
+  if (Math.hypot(e.offsetX - drag.sx, e.offsetY - drag.sy) > 6){ drag.moved = true; clearTimeout(drag.lpT); }
+  if (!drag.moved) return;
+  if (drag.body){
+    const w = toWorld(e.offsetX, e.offsetY);
+    Body.setPosition(drag.body, { x:w.x - drag.gx, y:w.y - drag.gy }); Body.setVelocity(drag.body, { x:0, y:0 });
+    drag.vx = w.x - drag.last.x; drag.vy = w.y - drag.last.y; drag.last = w;
+  } else {
+    cam.user = true;
+    cam.tx = cam.x = drag.cx - (e.offsetX - drag.sx)/cam.z; cam.ty = cam.y = drag.cy - (e.offsetY - drag.sy)/cam.z;
+  }
+});
+function endPtr(e){
+  ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = null;
+  if (!drag) return;
+  clearTimeout(drag.lpT);
+  if (drag.lp){ drag = null; cv.style.cursor = 'grab'; return; }
+  if (edit){ if (!drag.moved && drag.body !== edit.body) finishEdit(); drag = null; cv.style.cursor = 'grab'; return; }
+  if (!drag.moved && drag.body) openSheet(drag.body);
+  else if (!drag.moved) closeSheet();
+  if (drag.body && drag.moved && !drag.body.isStatic) Body.setVelocity(drag.body, { x:drag.vx*.6, y:drag.vy*.6 });
+  drag = null; cv.style.cursor = 'grab';
+}
+cv.addEventListener('pointerup', endPtr); cv.addEventListener('pointercancel', endPtr);
+cv.addEventListener('wheel', e => { e.preventDefault(); if (edit && e.shiftKey){ Body.setAngle(edit.body, edit.body.angle + Math.sign(e.deltaY)*Math.PI/36); return; } cam.user = true; cam.tz = clampZ(cam.tz*Math.exp(-e.deltaY*.0015)); }, { passive:false });
+const clampZ = z => Math.max(.25, Math.min(4, z));
+$('#btn-fit').onclick = () => { cam.user = false; cam.tx = 0; cam.ty = 0; cam.tz = fitTarget(); };
+$('#btn-rec').onclick = () => switchView('rec');
+
+/* edit mode: rotate / flip / pin a pose */
+let edit = null;
+function enterEdit(b){
+  if (edit && edit.body !== b) finishEdit();
+  closeSheet();
+  edit = { body: b, wasPinned: !!b.m.pin };
+  Body.setStatic(b, true);
+  $('#editbar').hidden = false; $('#edit-tip').hidden = false; $('#e-free').hidden = !b.m.pin;
+  document.querySelector('.fabs').hidden = true;
+}
+function exitEdit(silent){
+  if (!edit) return;
+  edit = null; $('#editbar').hidden = true; $('#edit-tip').hidden = true; document.querySelector('.fabs').hidden = false;
+}
+function finishEdit(){
+  if (!edit) return;
+  const b = edit.body; b.m.pin = { x: Math.round(b.position.x*10)/10, y: Math.round(b.position.y*10)/10, a: Math.round(b.angle*1000)/1000 };
+  save(); exitEdit(); toast('이 자리에 고정했어요');
+}
+function rotateEdit(d){ if (edit) Body.setAngle(edit.body, edit.body.angle + d); }
+$('#e-ccw').onclick = () => rotateEdit(-Math.PI/12);
+$('#e-cw').onclick = () => rotateEdit(Math.PI/12);
+$('#e-up').onclick = () => { if (!edit) return; const b = edit.body; Body.setAngle(b, Math.atan2(b.position.y, b.position.x) + Math.PI/2); };
+$('#e-flip').onclick = () => {
+  if (!edit) return;
+  const old = edit.body, m = old.m, cut = imgCache.get(m.id); if (!cut) return;
+  m.flip = !m.flip; save();
+  const nb = makeBody(m, cut, old.position.x, old.position.y, old.angle); Body.setStatic(nb, true);
+  Composite.remove(W.engine.world, old); Composite.add(W.engine.world, nb);
+  W.bodies[W.bodies.indexOf(old)] = nb; edit.body = nb;
+};
+$('#e-free').onclick = () => {
+  if (!edit) return; const b = edit.body; delete b.m.pin; save();
+  exitEdit(); Body.setStatic(b, false); Sleeping.set(b, false); toast('다시 둥실, 행성으로 돌아가요');
+};
+$('#e-done').onclick = finishEdit;
+
+function openSheet(b){
+  sel = b; const m = b.m, pet = petById(m.pet);
+  const sh = $('#sheet'); sh.hidden = false;
+  sh.innerHTML = `<div class="sheet" role="dialog" aria-label="기록 보기"><div class="ph" style="background:${pet.hue}33"></div><div class="info"><time>${fmt(m.date)}</time><h3>${esc(pet.name)}${m.kind ? ' · 예시' : ''}</h3><p>${esc(m.memo || '메모 없음')}</p><div class="acts"><button class="sbtn" id="sh-close">닫기</button><button class="sbtn" id="sh-edit">방향·자리 바꾸기</button><button class="sbtn danger" id="sh-del">이 기록 지우기</button></div></div></div>`;
+  const c = imgCache.get(m.id); if (c){ const cc = mk(c.width,c.height); cc.getContext('2d').drawImage(c,0,0); sh.querySelector('.ph').appendChild(cc); }
+  $('#sh-close').onclick = closeSheet;
+  $('#sh-edit').onclick = () => { closeSheet(); enterEdit(b); };
+  sh.onclick = e => { if (e.target === sh) closeSheet(); };
+  $('#sh-del').onclick = () => {
+    const acts = sh.querySelector('.acts');
+    acts.innerHTML = `<span style="font-size:13px;color:var(--muted)">정말 지울까요?</span><button class="sbtn yes" id="sh-yes">지우기</button><button class="sbtn" id="sh-no">취소</button>`;
+    $('#sh-no').onclick = () => openSheet(b);
+    $('#sh-yes').onclick = () => {
+      DB.moments = DB.moments.filter(x => x.id !== m.id); save();
+      if (edit && edit.body === b) exitEdit(true);
+      Composite.remove(W.engine.world, b); W.bodies = W.bodies.filter(x => x !== b);
+      closeSheet(); refreshSky(); toast('기록을 지웠어요');
+    };
+  };
+}
+function closeSheet(){ sel = null; $('#sheet').hidden = true; }
+
+function renderChips(){
+  const el = $('#chips'); el.innerHTML = '';
+  DB.pets.forEach(p => {
+    const b = document.createElement('button'); b.className = 'chip'; b.setAttribute('aria-pressed', p.id === DB.cur);
+    b.appendChild(avatar(p, 24));
+    b.insertAdjacentHTML('beforeend', `<span>${esc(p.name)}${p.example ? ' (예시)' : ''}</span><small>${momentsOf(p.id).length}</small>`);
+    b.onclick = () => { if (DB.cur !== p.id){ DB.cur = p.id; save(); closeSheet(); refreshSky(); buildWorld(p.id); } };
+    el.appendChild(b);
+  });
+  const add = document.createElement('button'); add.className = 'chip';
+  add.innerHTML = `<i style="border:1.5px dashed var(--muted)"></i>아이 추가`;
+  add.onclick = () => openPetModal(null, p => { DB.cur = p.id; save(); refreshSky(); buildWorld(p.id); });
+  el.appendChild(add);
+}
+function syncScene(){
+  const p = petById(DB.cur), sc = p ? p.bg : (S().defBg || 'space');
+  $('#scene-menu').hidden = true;
+  $('#space').dataset.scene = sc; $('#app').dataset.scene = sc;
+  $('#space').style.background = sc === 'space' ? '#05071A' : sc === 'sky' ? '#DCEBF9' : '#EEECE8';
+  const bt = $('#btn-scene'); bt.hidden = !p; bt.innerHTML = SCENE_ICON[sc] + SCENES[sc].name;
+}
+function sceneThumb(k){
+  const c = mk(88,88), g = c.getContext('2d');
+  if (k === 'space'){ const gr = g.createRadialGradient(44,40,0,44,44,64); gr.addColorStop(0,'#1A1F48'); gr.addColorStop(1,'#04050F'); g.fillStyle = gr; g.fillRect(0,0,88,88);
+    g.fillStyle = '#fff'; [[14,18],[60,12],[74,50],[24,66],[50,40],[36,28],[68,74]].forEach(([x,y],i) => { g.globalAlpha = .5 + (i%3)*.2; g.beginPath(); g.arc(x,y,i%2?1.2:.8,0,7); g.fill(); }); g.globalAlpha = 1; }
+  else if (k === 'sky'){ const gr = g.createLinearGradient(0,0,0,88); gr.addColorStop(0,'#B9D9F6'); gr.addColorStop(1,'#F7FAFD'); g.fillStyle = gr; g.fillRect(0,0,88,88);
+    g.fillStyle = 'rgba(255,255,255,.85)'; g.beginPath(); g.ellipse(40,40,22,8,0,0,7); g.ellipse(30,42,12,7,0,0,7); g.ellipse(52,36,12,8,0,0,7); g.fill(); }
+  else { g.drawImage(bedTexture(), 200, 300, 260, 260, 0, 0, 88, 88); }
+  return c;
+}
+function closeSceneMenu(){ $('#scene-menu').hidden = true; }
+$('#btn-scene').onclick = e => {
+  e.stopPropagation();
+  const p = petById(DB.cur), menu = $('#scene-menu'); if (!p) return;
+  if (!menu.hidden){ closeSceneMenu(); return; }
+  menu.innerHTML = `<h4>${esc(p.name)}의 배경</h4>`;
+  Object.entries(SCENES).forEach(([k,v]) => {
+    const b = document.createElement('button'); b.className = 'sopt'; b.setAttribute('aria-pressed', p.bg === k);
+    b.appendChild(sceneThumb(k));
+    b.insertAdjacentHTML('beforeend', `<span>${v.name}</span>${p.bg === k ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>' : '<span></span>'}`);
+    b.onclick = () => { p.bg = k; save(); syncScene(); closeSceneMenu(); };
+    menu.appendChild(b);
+  });
+  menu.hidden = false;
+};
+document.addEventListener('pointerdown', e => { const m = $('#scene-menu'); if (!m.hidden && !m.contains(e.target) && e.target !== $('#btn-scene')) closeSceneMenu(); });
+function refreshSky(){
+  renderChips();
+  const p = petById(DB.cur), list = p ? momentsOf(DB.cur) : [];
+  $('#cap-title').textContent = p ? `${p.name}의 우주` : '';
+  $('#cap-sub').textContent = list.length ? `모습 ${list.length}개 · ${fmt(list[0].date)} – ${fmt(list[list.length-1].date)}` : (p ? '모습 0개' : '');
+  const em = $('#space-empty');
+  if (!p){ em.hidden = false; em.innerHTML = `<span>아직 등록된 아이가 없어요.</span><button class="btn" id="em-add">아이 등록하기</button>`;
+    $('#em-add').onclick = () => openPetModal(null, np => { DB.cur = np.id; save(); refreshSky(); buildWorld(np.id); }); }
+  else if (!list.length){ em.hidden = false; em.innerHTML = `<span style="margin-top:180px">${esc(p.name)}의 첫 번째 모습을 띄워 보세요.</span>`; }
+  else em.hidden = true;
+  $('#btn-fit').hidden = !p; $('#btn-rec').hidden = !p;
+  syncScene();
+}
+let toastT;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1600); }
+
+/* ================= navigation ================= */
+let curView = 'sky';
+function switchView(v){
+  curView = v; $('#app').dataset.on = v;
+  ['sky','rec','time','set'].forEach(n => { $('#view-'+n).hidden = n !== v; });
+  document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected', t.dataset.view === v));
+  renderTop();
+  if (v === 'sky') requestAnimationFrame(size);
+  if (v === 'rec') renderRecChips();
+  if (v === 'time') renderTimeline();
+  if (v === 'set') renderSettings();
+  if (v !== 'sky'){ closeSheet(); if (edit) finishEdit(); }
+}
+let prevView = 'sky';
+function renderTop(){
+  const l = $('#top-l');
+  if (curView === 'set'){
+    l.innerHTML = `<button class="back" id="btn-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>설정</button>`;
+    $('#btn-back').onclick = () => switchView(prevView);
+    $('#btn-settings').hidden = true;
+  } else {
+    l.innerHTML = `<div class="brand"><span class="brand-mark" aria-hidden="true"></span>우리 애 우주</div>`;
+    $('#btn-settings').hidden = false;
+  }
+}
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => switchView(t.dataset.view));
+$('#btn-settings').onclick = () => { prevView = curView; switchView('set'); };
+
+/* ================= pet form (onboarding + settings) ================= */
+let avatarTarget = null;
+$('#file-avatar').addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = ''; if (!f || !avatarTarget) return;
+  const url = URL.createObjectURL(f), img = new Image();
+  img.onload = () => {
+    const N = 320, c = mk(N,N), s = Math.max(N/img.width, N/img.height);
+    c.getContext('2d').drawImage(img, (N - img.width*s)/2, (N - img.height*s)/2, img.width*s, img.height*s);
+    URL.revokeObjectURL(url); avatarTarget(c.toDataURL('image/jpeg', .85));
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); toast('이 사진은 열 수 없어요'); };
+  img.src = url;
+});
+function petForm(host, init){
+  const st = { name: init?.name || '', species: init?.species || 'cat', hue: init?.hue || HUES[DB.pets.length % HUES.length], photo: init?.photo || null, bg: init?.bg || S().defBg || 'space' };
+  host.innerHTML = `
+    <div class="petform">
+      <div class="avatar-pick">
+        <button type="button" class="avatar-btn" id="pf-av" aria-label="행성 사진 고르기"><span class="cam"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></span></button>
+        <small id="pf-avtx"></small>
+      </div>
+      <label class="field" for="pf-name">이름<input class="text" id="pf-name" maxlength="10" placeholder="예: 봄이" value="${esc(st.name)}"></label>
+      <div class="field"><span>어떤 친구인가요?</span><div class="seg" id="pf-sp">${Object.entries(SPECIES).map(([k,v]) => `<button type="button" data-k="${k}">${v}</button>`).join('')}</div></div>
+      <div class="field"><span>우주 배경 · 털색이 어두우면 밝은 배경이 잘 보여요</span><div class="seg" id="pf-bg">${Object.entries(SCENES).map(([k,v]) => `<button type="button" data-k="${k}"><i style="background:${v.sw}"></i>${v.name}</button>`).join('')}</div></div>
+      <div class="field"><span>행성 색</span><div class="swatches" id="pf-hue">${HUES.map(h => `<button type="button" class="sw" data-h="${h}" style="background:${h}" aria-label="색 ${h}"></button>`).join('')}</div></div>
+    </div>`;
+  const paint = () => {
+    const av = host.querySelector('#pf-av'); av.querySelector('canvas')?.remove();
+    const tmp = { id:'tmp', species:st.species, hue:st.hue, photo:st.photo };
+    const c = avatar(tmp, 132); c.style.width = c.style.height = '100%'; av.prepend(c);
+    const tx = host.querySelector('#pf-avtx');
+    tx.innerHTML = st.photo ? `우주 가운데 행성에 들어가요 · <button type="button" class="link" id="pf-rm" style="background:none;border:0;color:var(--muted);text-decoration:underline;padding:0">사진 빼기</button>` : '사진을 넣지 않으면 기본 이미지로 보여요';
+    const rm = host.querySelector('#pf-rm'); if (rm) rm.onclick = () => { st.photo = null; paint(); };
+    host.querySelectorAll('#pf-sp button').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === st.species));
+    host.querySelectorAll('#pf-hue button').forEach(b => b.setAttribute('aria-pressed', b.dataset.h === st.hue));
+    host.querySelectorAll('#pf-bg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === st.bg));
+  };
+  host.querySelector('#pf-av').onclick = () => { avatarTarget = d => { st.photo = d; paint(); }; $('#file-avatar').click(); };
+  host.querySelectorAll('#pf-sp button').forEach(b => b.onclick = () => { st.species = b.dataset.k; paint(); });
+  host.querySelectorAll('#pf-hue button').forEach(b => b.onclick = () => { st.hue = b.dataset.h; paint(); });
+  host.querySelectorAll('#pf-bg button').forEach(b => b.onclick = () => { st.bg = b.dataset.k; paint(); });
+  host.querySelector('#pf-name').oninput = e => { st.name = e.target.value; };
+  paint();
+  return { get: () => ({ ...st, name: st.name.trim() }), focusName: () => host.querySelector('#pf-name').focus() };
+}
+function openPetModal(pet, onDone){
+  const m = $('#modal'); m.hidden = false;
+  m.innerHTML = `
+    <div class="top"><button class="back" id="pm-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>${pet ? '아이 정보 수정' : '새 아이 등록'}</button></div>
+    <div class="modal-body"><div id="pm-form"></div><div id="pm-extra"></div></div>
+    <div class="modal-foot"><button class="btn" id="pm-ok">${pet ? '저장' : '우주 만들기'}</button></div>`;
+  const form = petForm($('#pm-form'), pet);
+  $('#pm-x').onclick = () => { m.hidden = true; };
+  if (pet){
+    const n = momentsOf(pet.id).length;
+    $('#pm-extra').innerHTML = `<div class="group"><button class="srow" id="pm-del"><div class="tx"><b class="danger-t">이 아이와 기록 지우기</b><span>모습 ${n}개가 함께 지워져요</span></div></button></div>`;
+    $('#pm-del').onclick = () => {
+      $('#pm-extra').innerHTML = `<div class="panel"><b>${esc(pet.name)}의 우주를 지울까요?</b><span style="color:var(--muted);font-size:13.5px">모습 ${n}개가 함께 지워지고 되돌릴 수 없어요.</span><div class="acts"><button class="sbtn yes" id="pm-yes">지우기</button><button class="sbtn" id="pm-no">취소</button></div></div>`;
+      $('#pm-no').onclick = () => openPetModal(pet, onDone);
+      $('#pm-yes').onclick = () => {
+        DB.pets = DB.pets.filter(p => p !== pet); DB.moments = DB.moments.filter(x => x.pet !== pet.id);
+        if (DB.cur === pet.id) DB.cur = DB.pets[0]?.id || null;
+        save(); m.hidden = true; refreshSky(); buildWorld(DB.cur); if (curView === 'set') renderSettings(); toast('지웠어요');
+      };
+    };
+  }
+  $('#pm-ok').onclick = () => {
+    const v = form.get(); if (!v.name){ form.focusName(); toast('이름을 적어 주세요'); return; }
+    let p = pet;
+    if (p){ Object.assign(p, { name:v.name, species:v.species, hue:v.hue, photo:v.photo, bg:v.bg }); }
+    else { p = { id:'p' + Date.now(), name:v.name, species:v.species, hue:v.hue, photo:v.photo, bg:v.bg }; DB.pets.push(p); }
+    if (!save()) return;
+    m.hidden = true; loadPhoto(p).then(() => { refreshSky(); if (curView === 'set') renderSettings(); });
+    onDone && onDone(p);
+  };
+}
+
+/* ================= onboarding ================= */
+let obStep = 0, obForm = null;
+function showOnboarding(){ obStep = 0; $('#onb').hidden = false; renderOnb(); }
+function renderOnb(){
+  const o = $('#onb');
+  const dots = `<div class="dots">${[0,1,2].map(i => `<i class="${i === obStep ? 'on' : ''}"></i>`).join('')}</div>`;
+  const skip = obStep < 2 ? `<button class="btn plain" id="ob-skip">건너뛰기</button>` : `<span></span>`;
+  let body = '', foot = '';
+  if (obStep === 0){
+    body = `<div class="hero-orbit" id="ob-hero"><div class="rg b"></div><div class="rg"></div><div class="pl"></div></div>
+      <h2>우리 애의 모든 모습을<br>한 우주에 모아요</h2>
+      <p class="l">식빵 굽던 날, 발라당 누운 날, 기지개 켠 날. 매일 달라지는 자세를 하나씩 기록하면 아이만의 작은 행성이 자라나요.</p>`;
+    foot = `<button class="btn" id="ob-next">다음</button>`;
+  } else if (obStep === 1){
+    body = `<h2>이렇게 쌓여요</h2><div class="steps">
+      <div class="st"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></div><div><b>찍거나 골라요</b><span>배경은 자동으로 지우고 아이만 남겨요</span></div></div>
+      <div class="st"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><ellipse cx="12" cy="12" rx="10" ry="3.6" transform="rotate(-20 12 12)"/></svg></div><div><b>우주에 띄워요</b><span>찍힌 자세 그대로 아이 행성 위에 쌓여요. 길게 누르면 방향과 자리를 바꿀 수 있어요</span></div></div>
+      <div class="st"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7 4v16M7 7h11M7 12h8M7 17h10"/></svg></div><div><b>언제든 돌아봐요</b><span>날짜·메모와 함께 타임라인으로 모아 봐요</span></div></div>
+    </div>`;
+    foot = `<button class="btn" id="ob-next">다음</button>`;
+  } else {
+    body = `<h2>첫 번째 행성을 만들어요</h2><p class="l" style="margin-top:-8px">가운데 행성에 들어갈 사진과 이름을 정해 주세요.</p><div id="ob-form"></div>
+      <label class="check" for="ob-ex"><input type="checkbox" id="ob-ex" checked>예시 우주(치즈)도 같이 두기</label>`;
+    foot = `<button class="btn" id="ob-done">우주 만들기</button><button class="btn plain" id="ob-later">나중에 등록하고 예시만 볼게요</button>`;
+  }
+  o.innerHTML = `<div class="onb-top">${dots}${skip}</div><div class="onb-body">${body}</div><div class="onb-foot">${foot}</div>`;
+  if (obStep === 0){
+    const hero = $('#ob-hero'); [['sit',8,30],['loaf',150,10],['curl',140,150],['stretch',4,140]].forEach(([k,x,y]) => {
+      const c = drawPose(k); c.style.left = x + 'px'; c.style.top = y + 'px'; c.style.objectFit = 'contain'; hero.appendChild(c); });
+  }
+  if (obStep === 2) obForm = petForm($('#ob-form'), null);
+  const nx = $('#ob-next'); if (nx) nx.onclick = () => { obStep++; renderOnb(); };
+  const sk = $('#ob-skip'); if (sk) sk.onclick = () => { obStep = 2; renderOnb(); };
+  const dn = $('#ob-done'); if (dn) dn.onclick = () => {
+    const v = obForm.get(); if (!v.name){ obForm.focusName(); return; }
+    const p = { id:'p' + Date.now(), name:v.name, species:v.species, hue:v.hue, photo:v.photo, bg:v.bg };
+    if (!$('#ob-ex').checked){ DB.pets = DB.pets.filter(x => !x.example); DB.moments = DB.moments.filter(x => !x.kind); }
+    DB.pets.unshift(p); DB.cur = p.id; finishOnb();
+  };
+  const lt = $('#ob-later'); if (lt) lt.onclick = () => { if (!DB.pets.length){ const s = seed(); DB.pets = s.pets; DB.moments = s.moments; } DB.cur = DB.pets[0].id; finishOnb(); };
+}
+function finishOnb(){
+  DB.onboarded = true; save(); $('#onb').hidden = true;
+  switchView('sky'); refreshSky();
+  const p = petById(DB.cur);
+  loadPhoto(p || {}).then(() => buildWorld(DB.cur)).then(() => { if (p && !momentsOf(p.id).length) toast('기록하기로 첫 모습을 띄워 보세요'); });
+}
+
+/* ================= settings ================= */
+function renderSettings(){
+  const v = $('#view-set'), s = S();
+  const used = (() => { try { return (localStorage.getItem(KEY) || '').length; } catch(e){ return 0; } })();
+  v.innerHTML = `
+    <div class="sec"><h2>내 아이들</h2><div class="group" id="set-pets"></div></div>
+    <div class="sec"><h2>우주</h2><div class="group">
+      <div class="srow wide"><div class="tx"><b>새 아이 기본 배경</b><span>아이마다 우주 화면 오른쪽 위에서 따로 바꿀 수 있어요</span></div>
+        <div class="seg" id="s-bg">${Object.entries(SCENES).map(([k,v]) => `<button type="button" data-k="${k}"><i style="background:${v.sw}"></i>${v.name}</button>`).join('')}</div></div>
+      <label class="srow" for="s-tw"><div class="tx"><b>별 반짝임</b><span>우주 배경의 별이 천천히 깜빡여요</span></div><input class="tog" type="checkbox" id="s-tw" ${s.twinkle ? 'checked' : ''}></label>
+      <div class="srow wide"><div class="tx"><b>쌓이는 느낌</b><span>모습들이 행성에 붙는 방식이에요</span></div>
+        <div class="seg" id="s-feel"><button type="button" data-k="cozy">포근하게 붙기</button><button type="button" data-k="float">둥실둥실 떠다니기</button></div></div>
+    </div></div>
+    <div class="sec"><h2>기록</h2><div class="group">
+      <div class="srow wide"><div class="tx"><b>기본 배경 민감도</b><span>새 사진을 열 때 처음 적용되는 값이에요</span></div>
+        <div class="slider-row"><span style="font-size:12px;color:var(--muted)">약하게</span><input type="range" id="s-sens" min="10" max="90" value="${s.sens}" aria-label="기본 배경 민감도"><output id="s-sens-v">${s.sens}</output></div></div>
+      <label class="srow" for="s-ad"><div class="tx"><b>사진 날짜 자동 입력</b><span>앨범 사진을 고르면 찍은 날짜를 채워요</span></div><input class="tog" type="checkbox" id="s-ad" ${s.autoDate ? 'checked' : ''}></label>
+    </div></div>
+    <div class="sec"><h2>알림</h2><div class="group">
+      <label class="srow" for="s-rm"><div class="tx"><b>매달 기록 알림</b><span>매달 1일, 이번 달 모습을 남기라고 알려 줘요 · 다음 업데이트에서 동작</span></div><input class="tog" type="checkbox" id="s-rm" ${s.remind ? 'checked' : ''}></label>
+    </div></div>
+    <div class="sec"><h2>데이터</h2><div class="group">
+      <div class="srow"><div class="tx"><b>저장된 기록</b><span>이 기기에 저장돼요</span></div><span class="val">${DB.moments.length}개 · ${Math.max(1, Math.round(used/1024))}KB</span></div>
+      <button class="srow" id="s-onb"><div class="tx"><b>소개 화면 다시 보기</b></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+      <div id="s-reset-wrap"><button class="srow" id="s-reset"><div class="tx"><b class="danger-t">모든 기록 지우고 처음부터</b></div></button></div>
+    </div></div>
+    <div class="sec"><h2>정보</h2><div class="group">
+      <div class="srow"><div class="tx"><b>버전</b></div><span class="val">0.1.0 베타</span></div>
+    </div></div>`;
+  const pl = $('#set-pets');
+  DB.pets.forEach(p => {
+    const r = document.createElement('button'); r.className = 'srow';
+    r.appendChild(avatar(p, 40));
+    r.insertAdjacentHTML('beforeend', `<div class="tx"><b>${esc(p.name)}${p.example ? ' (예시)' : ''}</b><span>${SPECIES[p.species]} · 모습 ${momentsOf(p.id).length}개</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>`);
+    r.onclick = () => openPetModal(p, () => { if (DB.cur === p.id) buildWorld(p.id); });
+    pl.appendChild(r);
+  });
+  const add = document.createElement('button'); add.className = 'srow';
+  add.innerHTML = `<i style="width:40px;height:40px;border-radius:50%;border:1.5px dashed var(--muted);display:grid;place-items:center;font-style:normal;color:var(--muted)">+</i><div class="tx"><b>아이 추가</b></div>`;
+  add.onclick = () => openPetModal(null, () => renderSettings());
+  pl.appendChild(add);
+  const bind = (id, key) => { $(id).onchange = e => { s[key] = e.target.checked; save(); }; };
+  bind('#s-tw','twinkle'); bind('#s-ad','autoDate');
+  $('#s-rm').onchange = e => { s.remind = e.target.checked; save(); toast(s.remind ? '다음 업데이트부터 매달 알려 드릴게요' : '알림을 껐어요'); };
+  const feel = () => document.querySelectorAll('#s-feel button').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === s.feel));
+  document.querySelectorAll('#s-feel button').forEach(b => b.onclick = () => { s.feel = b.dataset.k; save(); feel(); applyFeel(); W.bodies.forEach(x => Sleeping.set(x, false)); });
+  feel();
+  const bgs = () => document.querySelectorAll('#s-bg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.k === s.defBg));
+  document.querySelectorAll('#s-bg button').forEach(b => b.onclick = () => { s.defBg = b.dataset.k; save(); bgs(); });
+  bgs();
+  $('#s-sens').oninput = e => { s.sens = +e.target.value; $('#s-sens-v').textContent = s.sens; save(); };
+  $('#s-onb').onclick = () => showOnboarding();
+  $('#s-reset').onclick = () => {
+    $('#s-reset-wrap').innerHTML = `<div class="srow wide"><div class="tx"><b>정말 모두 지울까요?</b><span>아이 정보와 모습 ${DB.moments.length}개가 모두 지워지고 되돌릴 수 없어요.</span></div><div class="acts"><button class="sbtn yes" id="s-yes">모두 지우기</button><button class="sbtn" id="s-no">취소</button></div></div>`;
+    $('#s-no').onclick = renderSettings;
+    $('#s-yes').onclick = () => { DB = seed(); imgCache.clear(); save(); showOnboarding(); };
+  };
+}
+
+/* ================= record ================= */
+let recPet = null;
+function renderRecChips(){
+  if (!recPet || !petById(recPet)) recPet = DB.cur;
+  const el = $('#rec-chips'); el.innerHTML = '';
+  DB.pets.forEach(p => {
+    const b = document.createElement('button'); b.className = 'chip'; b.setAttribute('aria-pressed', p.id === recPet);
+    b.appendChild(avatar(p, 24)); b.insertAdjacentHTML('beforeend', `<span>${esc(p.name)}${p.example ? ' (예시)' : ''}</span>`);
+    b.onclick = () => { recPet = p.id; renderRecChips(); };
+    el.appendChild(b);
+  });
+  const add = document.createElement('button'); add.className = 'chip'; add.innerHTML = `<i style="border:1.5px dashed var(--muted)"></i>새 아이 추가`;
+  add.onclick = () => openPetModal(null, p => { recPet = p.id; renderRecChips(); });
+  el.appendChild(add);
+}
+const SH = { img:null, dc:null, cut:null, sampleIdx:0 };
+function cd(r,g,b,c){ const dr = r-c[0], dg = g-c[1], db = b-c[2]; return Math.sqrt(2*dr*dr + 4*dg*dg + 3*db*db)/3; }
+function prepImage(source){
+  const max = 360, sc = Math.min(1, max/Math.max(source.width, source.height));
+  const w = Math.round(source.width*sc), h = Math.round(source.height*sc);
+  const c = mk(w,h); c.getContext('2d').drawImage(source, 0, 0, w, h);
+  SH.img = c.getContext('2d').getImageData(0,0,w,h);
+  const src = $('#c-src'); src.width = w; src.height = h; src.getContext('2d').drawImage(c,0,0);
+  const d = SH.img.data, samp = [];
+  const push = (x,y) => { const i = (y*w+x)*4; samp.push([d[i],d[i+1],d[i+2]]); };
+  for (let x = 0; x < w; x += 2){ push(x,0); push(x,1); push(x,h-1); push(x,h-2); }
+  for (let y = 0; y < h; y += 2){ push(0,y); push(1,y); push(w-1,y); push(w-2,y); }
+  let cen = [0,.25,.5,.75].map(f => samp[Math.floor(f*samp.length)].slice());
+  for (let it = 0; it < 8; it++){
+    const a = cen.map(() => [0,0,0,0]);
+    samp.forEach(p => { let bi = 0, bd = 1e9; cen.forEach((c,k) => { const dd = cd(p[0],p[1],p[2],c); if (dd < bd){ bd = dd; bi = k; } }); const q = a[bi]; q[0]+=p[0]; q[1]+=p[1]; q[2]+=p[2]; q[3]++; });
+    cen = cen.map((c,k) => a[k][3] ? [a[k][0]/a[k][3], a[k][1]/a[k][3], a[k][2]/a[k][3]] : c);
+  }
+  SH.dc = new Float32Array(w*h);
+  for (let i = 0; i < w*h; i++){ let m = 1e9; for (const c of cen){ const v = cd(d[i*4],d[i*4+1],d[i*4+2],c); if (v < m) m = v; } SH.dc[i] = m; }
+  $('#rec-empty').hidden = true; $('#rec-work').hidden = false;
+  $('#sens').value = S().sens;
+  if (!$('#m-date').value) $('#m-date').value = today();
+  processCut();
+}
+function processCut(){
+  if (!SH.img) return;
+  const T = +$('#sens').value; $('#sens-v').textContent = T;
+  const { width:w, height:h, data:d } = SH.img, n = w*h, dc = SH.dc;
+  const bgm = new Uint8Array(n), q = new Int32Array(n); let qh = 0, qt = 0;
+  const sd = i => { if (!bgm[i] && dc[i] < T*1.6){ bgm[i] = 1; q[qt++] = i; } };
+  for (let x = 0; x < w; x++){ sd(x); sd((h-1)*w+x); }
+  for (let y = 0; y < h; y++){ sd(y*w); sd(y*w+w-1); }
+  while (qh < qt){
+    const i = q[qh++], x = i % w, y = (i/w)|0;
+    for (const j of [x>0?i-1:-1, x<w-1?i+1:-1, y>0?i-w:-1, y<h-1?i+w:-1]){
+      if (j < 0 || bgm[j]) continue;
+      const loc = cd(d[j*4],d[j*4+1],d[j*4+2],[d[i*4],d[i*4+1],d[i*4+2]]);
+      if (dc[j] < T || (loc < T*.3 && dc[j] < T*2.2)){ bgm[j] = 1; q[qt++] = j; }
+    }
+  }
+  const lab = new Int32Array(n); let bestL = 0, bestN = 0, L = 0;
+  for (let i = 0; i < n; i++){
+    if (bgm[i] || lab[i]) continue;
+    L++; let cnt = 0; const st = [i]; lab[i] = L;
+    while (st.length){ const k = st.pop(); cnt++; const x = k % w, y = (k/w)|0;
+      for (const j of [x>0?k-1:-1, x<w-1?k+1:-1, y>0?k-w:-1, y<h-1?k+w:-1]) if (j >= 0 && !bgm[j] && !lab[j]){ lab[j] = L; st.push(j); } }
+    if (cnt > bestN){ bestN = cnt; bestL = L; }
+  }
+  let a = new Float32Array(n); for (let i = 0; i < n; i++) a[i] = bestL && lab[i] === bestL ? 1 : 0;
+  for (let pass = 0; pass < 2; pass++){
+    const b = new Float32Array(n);
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++){ let s = 0, c = 0;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++){ const xx = x+dx, yy = y+dy; if (xx>=0&&yy>=0&&xx<w&&yy<h){ s += a[yy*w+xx]; c++; } }
+      b[y*w+x] = s/c; }
+    a = b;
+  }
+  const out = new ImageData(w,h);
+  for (let i = 0; i < n; i++){ out.data[i*4] = d[i*4]; out.data[i*4+1] = d[i*4+1]; out.data[i*4+2] = d[i*4+2];
+    out.data[i*4+3] = Math.min(1, Math.max(0, (a[i]-.25)/.6))*255; }
+  const full = mk(w,h); full.getContext('2d').putImageData(out,0,0);
+  const ratio = bestN/n, ok = ratio > .03 && ratio < .92;
+  $('#cut-warn').hidden = ok;
+  const cut = ok ? cropToAlpha(full, 2, 40) : null, cc = $('#c-cut');
+  if (cut){ cc.width = cut.width; cc.height = cut.height; cc.getContext('2d').drawImage(cut,0,0); }
+  else { cc.width = w; cc.height = h; cc.getContext('2d').clearRect(0,0,w,h); }
+  SH.cut = cut; $('#btn-launch').disabled = !cut;
+}
+let raf = 0;
+$('#sens').addEventListener('input', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(processCut); });
+function onFile(e){
+  const f = e.target.files && e.target.files[0]; if (!f) return;
+  const url = URL.createObjectURL(f), img = new Image();
+  img.onload = () => { prepImage(img); URL.revokeObjectURL(url); };
+  img.onerror = () => { URL.revokeObjectURL(url); toast('이 사진은 열 수 없어요'); };
+  img.src = url; e.target.value = '';
+  $('#m-date').value = (S().autoDate && f.lastModified) ? ymd(new Date(f.lastModified)) : today();
+}
+$('#file-cam').addEventListener('change', onFile);
+$('#file-album').addEventListener('change', onFile);
+$('#btn-sample').onclick = () => {
+  const kinds = ['loaf','stretch','belly','sit','walk','curl'];
+  const walls = [['#9FB4C7','#B88C63'],['#C7BCD9','#9D7A5B'],['#A9C3A3','#C29A6E'],['#D7C5AE','#7D6450']];
+  const kind = kinds[SH.sampleIdx % kinds.length], [wall, floor] = walls[SH.sampleIdx % walls.length]; SH.sampleIdx++;
+  const Wd = 360, H = 300, c = mk(Wd,H), g = c.getContext('2d');
+  g.fillStyle = wall; g.fillRect(0,0,Wd,H*.6); g.fillStyle = floor; g.fillRect(0,H*.6,Wd,H*.4);
+  g.strokeStyle = 'rgba(0,0,0,.12)'; g.lineWidth = 2; for (let x = -40; x < Wd; x += 70){ g.beginPath(); g.moveTo(x,H*.6); g.lineTo(x-30,H); g.stroke(); }
+  const pet = drawPose(kind), sc = Math.min(230/pet.height, 280/pet.width), pw = pet.width*sc, ph = pet.height*sc;
+  g.fillStyle = 'rgba(0,0,0,.16)'; g.beginPath(); g.ellipse(Wd/2, H*.6 + 92, pw*.45, 10, 0, 0, 7); g.fill();
+  g.drawImage(pet, (Wd-pw)/2, H*.6 + 95 - ph, pw, ph);
+  const id = g.getImageData(0,0,Wd,H); for (let i = 0; i < id.data.length; i += 4){ const v = (Math.random()-.5)*16; id.data[i]+=v; id.data[i+1]+=v; id.data[i+2]+=v; }
+  g.putImageData(id,0,0);
+  $('#m-date').value = today();
+  prepImage(c);
+};
+$('#btn-launch').onclick = () => {
+  if (!SH.cut) return;
+  if (!recPet || !petById(recPet)){ toast('먼저 아이를 등록해 주세요'); return; }
+  const sc = Math.min(1, 240/Math.max(SH.cut.width, SH.cut.height));
+  const small = mk(SH.cut.width*sc, SH.cut.height*sc); small.getContext('2d').drawImage(SH.cut, 0, 0, small.width, small.height);
+  const m = { id:'m' + Date.now(), pet:recPet, data:small.toDataURL('image/png'), date:$('#m-date').value || today(), memo:$('#m-memo').value.trim(), size:78 + Math.round(Math.random()*20) };
+  DB.moments.push(m);
+  if (!save()){ DB.moments.pop(); return; }
+  imgCache.set(m.id, small);
+  $('#rec-work').hidden = true; $('#rec-empty').hidden = false; $('#m-memo').value = ''; $('#m-date').value = ''; SH.img = null; SH.cut = null;
+  DB.cur = m.pet; save(); switchView('sky'); refreshSky();
+  buildWorld(m.pet, { launch:m.id }).then(() => toast(`${petById(m.pet).name}의 우주에 도착!`));
+};
+
+/* ================= timeline ================= */
+function renderTimeline(){
+  const el = $('#timeline'); el.innerHTML = '';
+  const all = DB.moments.filter(m => petById(m.pet)).sort((a,b) => b.date.localeCompare(a.date));
+  if (!all.length){ el.innerHTML = '<p class="note">아직 기록이 없어요. 기록하기 탭에서 첫 모습을 남겨 보세요.</p>'; return; }
+  const groups = {}; all.forEach(m => (groups[m.date.slice(0,7)] ||= []).push(m));
+  Object.entries(groups).forEach(([mo, list]) => {
+    const sec = document.createElement('div'); sec.className = 'month';
+    sec.innerHTML = `<h2>${mo.replace('-', '년 ')}월 · ${list.length}</h2>`;
+    list.forEach(m => {
+      const p = petById(m.pet);
+      const it = document.createElement('button'); it.className = 'item';
+      it.innerHTML = `<div class="ph" style="background:${p.hue}33"></div><div style="min-width:0;display:grid;gap:2px"><time>${fmt(m.date)}</time><p>${esc(m.memo || '메모 없음')}</p><span class="who"><i style="background:${p.hue}"></i>${esc(p.name)}${p.example ? ' (예시)' : ''}</span></div><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--muted)"><path d="M9 6l6 6-6 6"/></svg>`;
+      momentImage(m).then(c => { if (c){ const cc = mk(c.width,c.height); cc.getContext('2d').drawImage(c,0,0); it.querySelector('.ph').appendChild(cc); } });
+      it.onclick = async () => {
+        const changed = DB.cur !== m.pet; DB.cur = m.pet; save(); switchView('sky'); refreshSky();
+        if (changed) await buildWorld(m.pet);
+        const b = W.bodies.find(x => x.m.id === m.id);
+        if (b){ cam.user = true; cam.tx = b.position.x; cam.ty = b.position.y; cam.tz = Math.max(cam.z, 1.6); openSheet(b); }
+      };
+      sec.appendChild(it);
+    });
+    el.appendChild(sec);
+  });
+}
+
+/* ================= boot ================= */
+new ResizeObserver(() => { if (!$('#view-sky').hidden) size(); }).observe($('#space'));
+if (!petById(DB.cur)) DB.cur = DB.pets[0]?.id || null;
+renderTop(); size(); refreshSky();
+Promise.all(DB.pets.map(loadPhoto)).then(() => { refreshSky(); return buildWorld(DB.cur); }).then(() => requestAnimationFrame(frame));
+if (!DB.onboarded) showOnboarding();
+})();
+</script>
+
+</body>
+</html>

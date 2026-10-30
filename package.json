@@ -1,0 +1,16 @@
+{
+  "name": "pet-universe",
+  "version": "0.1.0",
+  "private": true,
+  "description": "우리 애 우주 — 반려동물의 여러 모습을 행성 위에 쌓아 기록하는 앱",
+  "scripts": {
+    "sync": "cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "7.4.2",
+    "@capacitor/core": "7.4.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "7.4.2"
+  }
+}
